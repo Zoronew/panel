@@ -8,10 +8,6 @@ use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\TransferException;
 use Pterodactyl\Exceptions\Http\Connection\DaemonConnectionException;
 
-/**
- * @method \Pterodactyl\Repositories\Wings\DaemonServerRepository setNode(\Pterodactyl\Models\Node $node)
- * @method \Pterodactyl\Repositories\Wings\DaemonServerRepository setServer(\Pterodactyl\Models\Server $server)
- */
 class DaemonServerRepository extends DaemonRepository
 {
     /**
@@ -154,6 +150,26 @@ class DaemonServerRepository extends DaemonRepository
             $this->getHttpClient()
                 ->post(sprintf('/api/servers/%s/ws/deny', $this->server->uuid), [
                     'json' => ['jtis' => $jtis],
+                ]);
+        } catch (TransferException $exception) {
+            throw new DaemonConnectionException($exception);
+        }
+    }
+
+    /**
+     * Disconnect active SFTP sessions for a specific user on the server.
+     *
+     * @throws DaemonConnectionException
+     */
+    public function disconnectSFTP(string $username): void
+    {
+        Assert::isInstanceOf($this->server, Server::class);
+        $sftpUsername = $username . '.' . $this->server->uuidShort;
+
+        try {
+            $this->getHttpClient()
+                ->delete(sprintf('/api/servers/%s/sftp/disconnect', $this->server->uuid), [
+                    'json' => ['username' => $sftpUsername],
                 ]);
         } catch (TransferException $exception) {
             throw new DaemonConnectionException($exception);

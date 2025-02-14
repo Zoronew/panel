@@ -36,7 +36,7 @@ class DeleteSubuserTest extends ClientApiIntegrationTestCase
         $uuid = $differentUser->id . substr($real, strlen((string) $differentUser->id));
 
         /** @var User $subuser */
-        $subuser = User::factory()->create(['uuid' => $uuid]);
+        $subuser = User::factory()->create(['uuid' => $uuid, 'username' => 'test']);
 
         Subuser::query()->forceCreate([
             'user_id' => $subuser->id,
@@ -45,6 +45,7 @@ class DeleteSubuserTest extends ClientApiIntegrationTestCase
         ]);
 
         $mock->expects('setServer->revokeUserJTI')->with($subuser->id)->andReturnUndefined();
+        $mock->expects('setServer->disconnectSFTP')->with($subuser->username)->andReturnUndefined();
 
         $this->actingAs($user)->deleteJson($this->link($server) . "/users/$subuser->uuid")->assertNoContent();
 
@@ -52,7 +53,7 @@ class DeleteSubuserTest extends ClientApiIntegrationTestCase
         // anything in the database.
         $uuid = '18180000' . substr(Uuid::uuid4()->toString(), 8);
         /** @var User $subuser */
-        $subuser = User::factory()->create(['uuid' => $uuid]);
+        $subuser = User::factory()->create(['uuid' => $uuid, 'username' => 'test1']);
 
         Subuser::query()->forceCreate([
             'user_id' => $subuser->id,
@@ -61,6 +62,7 @@ class DeleteSubuserTest extends ClientApiIntegrationTestCase
         ]);
 
         $mock->expects('setServer->revokeUserJTI')->with($subuser->id)->andReturnUndefined();
+        $mock->expects('setServer->disconnectSFTP')->with($subuser->username)->andReturnUndefined();
 
         $this->actingAs($user)->deleteJson($this->link($server) . "/users/$subuser->uuid")->assertNoContent();
     }
