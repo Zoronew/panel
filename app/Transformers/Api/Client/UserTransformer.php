@@ -22,12 +22,21 @@ class UserTransformer extends BaseClientTransformer
     public function transform(User $model): array
     {
         return [
+            // used in AccountTransformer. Do we want to keep this?
+            'id' => $model->id,
             'uuid' => $model->uuid,
             'username' => $model->username,
             'email' => $model->email,
             'image' => 'https://gravatar.com/avatar/' . md5(Str::lower($model->email)),
+            // which do we prefer?
+            'admin' => (bool) $user->root_admin,
+            'root_admin' => (bool) $user->root_admin,
             '2fa_enabled' => $model->use_totp,
-            'created_at' => $model->created_at->toAtomString(),
+            'first_name' => $model->name_first,
+            'last_name' => $model->name_last,
+            'language' => $model->language,
+            'created_at' => $this->formatTimestamp($user->created_at),
+            'updated_at' => $this->formatTimestamp($user->updated_at),
         ];
     }
 }
